@@ -1,37 +1,27 @@
-import org.jetbrains.compose.compose
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
-    id("org.jetbrains.compose") version "1.1.1"
+    kotlin("jvm") version "1.6.10" apply false
 }
 
-group = "com.kairlec"
-version = "1.0.0"
+allprojects {
+    group = "com.kairlec"
+    version = "1.0.0"
 
-repositories {
-    mavenLocal()
-    google()
-    mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    repositories {
+        mavenLocal()
+        google()
+        mavenCentral()
+    }
 }
 
-dependencies {
-    implementation(compose.desktop.currentOs)
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
-}
-
-compose.desktop {
-    application {
-        mainClass = "MainKt"
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "environment-switcher"
-            packageVersion = project.version.toString()
+subprojects {
+    apply(plugin = "kotlin")
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
+            jvmTarget = "11"
+            allWarningsAsErrors = true
         }
     }
 }
