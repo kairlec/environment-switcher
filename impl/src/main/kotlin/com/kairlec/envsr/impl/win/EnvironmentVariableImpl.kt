@@ -29,7 +29,3 @@ class VariableValueSupportImpl @Deprecated("不应该直接调用构造函数", 
         return WindowsLiteralValue(value)
     }
 }
-
-inline val String.placeholder: VariableValue get() = VariableValue.placeholder(this)
-
-inline val String.literal: VariableValue get() = VariableValue.literal(this)
