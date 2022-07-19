@@ -15,7 +15,7 @@ namespace EnvsrWinNative
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool SendNotifyMessage(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam);
 
-        public bool NotifyEnviromentChange()
+        public bool NotifyEnvironmentChange()
         {
             return SendNotifyMessage((IntPtr)HWND_BROADCAST, WM_SETTINGCHANGE, (UIntPtr)0, "Environment");
         }
@@ -61,7 +61,7 @@ namespace EnvsrWinNative
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
 
-        public Dictionary<string, string> GetAllEnviroment(int type = 0)
+        public Dictionary<string, string> GetAllEnvironment(int type = 0)
         {
             var envs = new Dictionary<string, string>();
 
@@ -73,7 +73,7 @@ namespace EnvsrWinNative
             return envs;
         }
 
-        public void SetEnviromentVariable(string key, string value, int type = 0)
+        public void SetEnvironmentVariable(string key, string value, int type = 0)
         {
             Environment.SetEnvironmentVariable(key, value, GetTargetByType(type));
         }

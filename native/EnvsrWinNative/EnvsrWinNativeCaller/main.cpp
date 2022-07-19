@@ -1,16 +1,10 @@
-#include<iostream>
-#include<string>
+#include<cstring>
 
-using namespace EnvsrWinNative;
+#define DllExport __declspec(dllexport)
 
-bool NotifyEnviromentChange() {
-	EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinSupport();
-	return support->NotifyEnviromentChange();
-}
-
-System::Collections::Generic::Dictionary<System::String^, System::String^>^ GetAllEnviroment(int type) {
-	EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinSupport();
-	return support->GetAllEnviroment(type);
+System::Collections::Generic::Dictionary<System::String^, System::String^>^ GetAllEnvironment(int type) {
+	EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
+	return support->GetAllEnvironment(type);
 }
 
 class CSharpStringWrapper {
@@ -30,11 +24,38 @@ public:
 	}
 };
 
-int main() {
-	auto dict = GetAllEnviroment(0);
-	for each (auto entry in dict)
-	{
-		std::cout << CSharpStringWrapper(entry.Key).cstr() << " -> " << CSharpStringWrapper(entry.Value).cstr() << std::endl;
+extern "C" {
+	DllExport int NotifyEnvironmentChange() {
+		EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
+		return support->NotifyEnvironmentChange();
 	}
-	return 0;
+	
+	DllExport unsigned long long GetAllEnvironment(int type, char buffer[]) {
+		auto dict = GetAllEnvironment(type);
+		unsigned long long offset = 0;
+		for each (auto entry in dict)
+		{
+			auto key = CSharpStringWrapper(entry.Key).cstr();
+			auto keyLen = strlen(key) + 1;
+			memcpy(buffer + offset, key, keyLen);
+			offset += keyLen;
+			auto value = CSharpStringWrapper(entry.Value).cstr();
+			auto valueLen = strlen(value) + 1;
+			memcpy(buffer + offset, value, valueLen);
+			offset += valueLen;
+		}
+		return offset;
+	}
+
+	DllExport void SetEnvironmentVariable(char* key, char* value, int type) {
+		EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
+		auto cskey = System::Runtime::InteropServices::Marshal::PtrToStringAnsi((System::IntPtr)key);
+		auto csvalue = System::Runtime::InteropServices::Marshal::PtrToStringAnsi((System::IntPtr)value);
+		support->SetEnvironmentVariable(cskey, csvalue, type);
+	}
+
+	DllExport int IsAdministrator() {
+		EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
+		return support->IsAdministrator();
+	}
 }
