@@ -78,6 +78,15 @@ namespace EnvsrWinNative
             Environment.SetEnvironmentVariable(key, value, GetTargetByType(type));
         }
 
+        public string GetEnvironmentVariable(string key, int type = 0)
+        {
+            return Environment.GetEnvironmentVariable(key, GetTargetByType(type));
+        }
+
+        public string ExpandEnvironmentVariable(string value)
+        {
+            return Environment.ExpandEnvironmentVariables(value);
+        }
 
         public bool IsAdministrator()
         {

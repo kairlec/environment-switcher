@@ -1,61 +1,70 @@
 #include<cstring>
+#include <msclr/gcroot.h>
 
 #define DllExport __declspec(dllexport)
 
-System::Collections::Generic::Dictionary<System::String^, System::String^>^ GetAllEnvironment(int type) {
-	EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
-	return support->GetAllEnvironment(type);
-}
-
-class CSharpStringWrapper {
+class EnvsrWinSupportHandle {
 private:
-	System::IntPtr _ptr;
-	const char* _cstr = nullptr;
+	msclr::gcroot<EnvsrWinNative::EnvsrWinSupport^> support;
 public:
-	CSharpStringWrapper(System::String^ csstr) {
-		_ptr = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(csstr);
-		_cstr = (const char*)(void*)_ptr;
+	EnvsrWinSupportHandle() {
+		support = gcnew EnvsrWinNative::EnvsrWinSupport();
 	}
-	const char* cstr() const {
-		return _cstr;
+	System::Collections::Generic::Dictionary<System::String^, System::String^>^ getAllEnvironment(int type) const {
+		return support->GetAllEnvironment(type);
 	}
-	~CSharpStringWrapper() {
-		System::Runtime::InteropServices::Marshal::FreeCoTaskMem(_ptr);
-	}
-};
-
-extern "C" {
-	DllExport int NotifyEnvironmentChange() {
-		EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
+	bool notifyEnvironmentChange() const {
 		return support->NotifyEnvironmentChange();
 	}
-	
-	DllExport unsigned long long GetAllEnvironment(int type, char buffer[]) {
-		auto dict = GetAllEnvironment(type);
-		unsigned long long offset = 0;
-		for each (auto entry in dict)
-		{
-			auto key = CSharpStringWrapper(entry.Key).cstr();
-			auto keyLen = strlen(key) + 1;
-			memcpy(buffer + offset, key, keyLen);
-			offset += keyLen;
-			auto value = CSharpStringWrapper(entry.Value).cstr();
-			auto valueLen = strlen(value) + 1;
-			memcpy(buffer + offset, value, valueLen);
-			offset += valueLen;
-		}
-		return offset;
-	}
-
-	DllExport void SetEnvironmentVariable(char* key, char* value, int type) {
-		EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
+	void setEnvironmentVariable(char* key, char* value, int type) const {
 		auto cskey = System::Runtime::InteropServices::Marshal::PtrToStringAnsi((System::IntPtr)key);
 		auto csvalue = System::Runtime::InteropServices::Marshal::PtrToStringAnsi((System::IntPtr)value);
 		support->SetEnvironmentVariable(cskey, csvalue, type);
 	}
-
-	DllExport int IsAdministrator() {
-		EnvsrWinNative::EnvsrWinSupport^ support = gcnew EnvsrWinNative::EnvsrWinSupport();
+	bool isAdministrator() const {
 		return support->IsAdministrator();
+	}
+	System::String^ getEnvironmentVariable(char* key, int type) const {
+		return support->GetEnvironmentVariable(System::Runtime::InteropServices::Marshal::PtrToStringAnsi((System::IntPtr)key), type);
+	}
+	System::String^ expandEnvironmentVariable(char* value) const {
+		return support->ExpandEnvironmentVariable(System::Runtime::InteropServices::Marshal::PtrToStringAnsi((System::IntPtr)value));
+	}
+};
+
+const static auto handler = EnvsrWinSupportHandle();
+
+extern "C" {
+	DllExport int notifyEnvironmentChange() {
+		return handler.notifyEnvironmentChange();
+	}
+
+	DllExport unsigned long long getAllEnvironment(int type, char buffer[]) {
+		auto dict = handler.getAllEnvironment(type);
+		unsigned long long offset = 0;
+		for each (auto entry in dict)
+		{
+			auto keyPtr = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(entry.Key);
+			auto key = (char*)(void*)keyPtr;
+			auto keyLen = strlen(key) + 1;
+			memcpy(buffer + offset, key, keyLen);
+			offset += keyLen;
+			auto valuePtr = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(entry.Value);
+			auto value = (char*)(void*)valuePtr;
+			auto valueLen = strlen(value) + 1;
+			memcpy(buffer + offset, value, valueLen);
+			offset += valueLen;
+			System::Runtime::InteropServices::Marshal::FreeCoTaskMem(keyPtr);
+			System::Runtime::InteropServices::Marshal::FreeCoTaskMem(valuePtr);
+		}
+		return offset;
+	}
+
+	DllExport void setEnvironmentVariable(char* key, char* value, int type) {
+		handler.setEnvironmentVariable(key, value, type);
+	}
+
+	DllExport int isAdministrator() {
+		return handler.isAdministrator();
 	}
 }
