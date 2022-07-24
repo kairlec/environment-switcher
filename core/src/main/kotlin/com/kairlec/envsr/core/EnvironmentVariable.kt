@@ -35,6 +35,8 @@ sealed interface MutableEnvironmentVariable : EnvironmentVariable {
  * 环境变量变量值
  */
 sealed interface VariableValue {
+    val rawContent: String
+
     companion object : VariableValueSupport by loadSignal()
 }
 

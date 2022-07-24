@@ -13,4 +13,9 @@ interface EnvironmentSource : RuntimeSupport {
      * 是否是只读的环境源
      */
     val readOnly: Boolean
+
+    /**
+     * 源下所拥有的环境变量
+     */
+    val variables: Collection<EnvironmentVariable>
 }

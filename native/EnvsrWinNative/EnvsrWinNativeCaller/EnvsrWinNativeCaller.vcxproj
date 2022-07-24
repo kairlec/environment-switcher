@@ -135,6 +135,11 @@
   <ItemGroup>
     <ProjectReference Include="..\EnvsrWinNative\EnvsrWinNative.csproj">
       <Project>{6d89124f-df3c-4a72-9f4b-e1096872b87d}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

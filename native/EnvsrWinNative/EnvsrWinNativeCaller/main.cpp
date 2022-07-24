@@ -1,4 +1,4 @@
-#include<cstring>
+#include <cstring>
 #include <msclr/gcroot.h>
 
 #define DllExport __declspec(dllexport)
@@ -39,6 +39,27 @@ extern "C" {
 		return handler.notifyEnvironmentChange();
 	}
 
+	DllExport unsigned long long expandEnvironmentVariable(char* value, char buffer[]) {
+		auto csstr = handler.expandEnvironmentVariable(value);
+		auto valuePtr = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(csstr);
+		auto cvalue = (char*)(void*)valuePtr;
+		auto valueLen = strlen(cvalue);
+		memcpy(buffer, cvalue, valueLen + 1);
+		return valueLen;
+	}
+
+	DllExport unsigned long long getEnvironmentVariable(char* key, int type, char buffer[]) {
+		auto csstr = handler.getEnvironmentVariable(key, type);
+		if (csstr == nullptr) {
+			return -1;
+		}
+		auto valuePtr = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(csstr);
+		auto cvalue = (char*)(void*)valuePtr;
+		auto valueLen = strlen(cvalue);
+		memcpy(buffer, cvalue, valueLen + 1);
+		return valueLen;
+	}
+
 	DllExport unsigned long long getAllEnvironment(int type, char buffer[]) {
 		auto dict = handler.getAllEnvironment(type);
 		unsigned long long offset = 0;
@@ -68,3 +89,4 @@ extern "C" {
 		return handler.isAdministrator();
 	}
 }
+

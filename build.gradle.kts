@@ -17,6 +17,11 @@ allprojects {
 
 subprojects {
     apply(plugin = "kotlin")
+
+    dependencies{
+        "implementation"("io.github.microutils:kotlin-logging-jvm:2.1.23")
+    }
+
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
